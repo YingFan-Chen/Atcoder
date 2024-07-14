@@ -1,0 +1,120 @@
+#pragma once
+#include <bits/stdc++.h>
+#define ll long long
+using namespace std;
+
+#ifndef _DISJOINT_SET
+#define _DISJOINT_SET
+class disjoint_set{
+        std::vector<ll> v;
+    public : 
+        disjoint_set(ll n){
+            v.assign(n, -1);
+        }
+        ll find(ll x){
+            if(v[x] < 0) return x;
+            else{
+                ll root = find(v[x]);
+                v[x] = root;
+                return root;
+            }
+        }
+        void merge(ll x, ll y){
+            ll root1 = find(x), root2 = find(y);
+            if(root1 != root2){
+                if(v[root1] < v[root2]){
+                    v[root1] += v[root2];
+                    v[root2] = root1;
+                }else{
+                    v[root2] += v[root1];
+                    v[root1] = root2;
+                }
+            }
+            return ;
+        }
+        /* merge method will merge according to size of two sets, and deterministic_merge method will merge set y to set x. */
+        void deterministic_merge(ll x, ll y){
+            ll root1 = find(x), root2 = find(y);
+            if(root1 != root2){
+                v[root1] += v[root2];
+                v[root2] = root1;
+            }
+            return ;
+        }
+        ll size(ll x){
+            return - v[find(x)];
+        }
+};
+#endif
+
+#ifndef _BINARY_INDEX_TREE
+#define _BINARY_INDEX_TREE
+class binary_index_tree{
+        ll size;
+        std::vector<ll> v;
+    public:
+        binary_index_tree(ll n) : size(n) {
+            v.assign(n + 1, 0);
+        }
+        void update(ll index, ll x){
+            while(index <= size){
+                v[index] += x;
+                index += index & (-index);
+            }
+            return ;
+        }
+        ll query(ll index){
+            ll res = 0;
+            while(index){
+                res += v[index];
+                index -= index & (-index);
+            }
+            return res;
+        }
+};
+#endif
+
+#ifndef _OLD_DRIVER_TREE
+#define _OLD_DRIVER_TREE
+class old_driver_tree{
+    public :
+        class ODT_Node{
+            public : 
+                ll left, right;
+                mutable ll val;
+                ODT_Node(ll _left, ll _right, ll _val) : left(_left), right(_right), val(_val){}
+                inline bool operator< (const ODT_Node &x) const{
+                    return left < x.left;
+                }
+        };
+
+        set<ODT_Node> s;
+        old_driver_tree(ll minimum, ll maximum, ll initial_val){
+            s.insert(ODT_Node{minimum, maximum, initial_val});
+        }
+
+        auto split(ll x){
+            auto iter = -- s.upper_bound(ODT_Node{x, 0, 0});
+            if(iter->left == x) return iter;
+            ll left = iter->left, right = iter->right, val = iter->val;
+            s.erase(iter);
+            s.insert(ODT_Node{left, x - 1, val});
+            return s.insert(ODT_Node{x, right, val}).first;
+        }
+
+        void assign(ll left, ll right, ll val){
+            //Note : right first, otherwise iterr may runtime error 
+            auto iterr = split(right + 1), iterl = split(left);
+            s.erase(iterl, iterr);
+            s.insert(ODT_Node{left, right, val});
+        }
+
+        /*Template
+        void operation(ll left, ll right, ll val){
+            auto iterr = split(right + 1), iterl = split(left);
+            for(; iterl != iterr; iterl ++){
+
+            }
+        }*/
+};
+#endif
